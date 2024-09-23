@@ -2,8 +2,8 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-from Upwork.db.transaction import insert_data, get_all
-from Upwork.util.link import extract_links
+from server.scraper.Upwork.db.transaction import insert_data, get_all
+from server.scraper.Upwork.util.link import extract_links
 
 
 def __get_urls_from_file(file_path: str) -> list:

@@ -1,5 +1,5 @@
-from Upwork.util.link import extract_links
-from Upwork.scraper import fetch_page_content, extract_job_info
+from server.scraper.Upwork.util.link import extract_links
+from server.scraper.Upwork.scraper import fetch_page_content, extract_job_info
 
 
 def job_data_extract(url):

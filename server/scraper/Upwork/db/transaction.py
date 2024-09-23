@@ -1,6 +1,6 @@
 import json
 
-from Upwork.db.model.work import Work
+from server.scraper.Upwork.db.model.work import Work
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
