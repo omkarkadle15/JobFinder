@@ -184,6 +184,112 @@ class LinkedInPostScraper:
             self.driver.quit()
             raise
 
+    # def scrape_posts(self, num_posts=10):
+    #     posts = []
+    #     scroll_attempts = 0
+    #     max_scroll_attempts = 5
+
+    #     author_elements = [
+    #         ".//span[contains(@class, 'feed-shared-actor__name')]",
+    #         ".//span[contains(@class, 'update-components-actor__name')]",
+    #         ".//span[contains(@class, 'visually-hidden')]",
+    #         ".//span[contains(@class, 'update-components-actor__title')]"
+    #     ]
+
+    #     content_elements = [
+    #         ".//div[contains(@class, 'feed-shared-update-v2__description')]",
+    #         ".//div[contains(@class, 'feed-shared-text')]",
+    #         ".//div[contains(@class, 'update-components-text')]",
+    #         ".//div[contains(@class, 'feed-shared-update-v2__content')]"
+    #     ]
+
+    #     while len(posts) < num_posts and scroll_attempts < max_scroll_attempts:
+    #         self.click_more_button()
+
+    #         post_elements = self.driver.find_elements(By.XPATH, "//div[contains(@class, 'feed-shared-update-v2') or contains(@class, 'occludable-update')]")
+            
+    #         for post in post_elements:
+    #             if len(posts) >= num_posts:
+    #                 break
+                
+    #             try:
+    #                 author = None
+    #                 for element in author_elements:
+    #                     try:
+    #                         author = post.find_element(By.XPATH, element).text
+    #                         if author:
+    #                             author = self.clean_author_name(author)
+    #                             break
+    #                     except NoSuchElementException:
+    #                         continue
+
+    #                 if not author:
+    #                     logging.warning("Could not find author name, skipping post")
+    #                     continue
+
+    #                 content = None
+    #                 for element in content_elements:
+    #                     try:
+    #                         content = post.find_element(By.XPATH, element).text
+    #                         if content:
+    #                             content = self.clean_content(content)
+    #                             break
+    #                     except NoSuchElementException:
+    #                         continue
+
+    #                 if not content:
+    #                     logging.warning("Could not find post content, skipping post")
+    #                     continue
+
+    #                 # Check if post already exists in the database
+    #                 if self.post_exists(author, content):
+    #                     logging.info(f"Post by {author} already exists. Skipping.")
+    #                     continue
+
+    #                 email = None
+    #                 email_match = re.search(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', content)
+    #                 if email_match:
+    #                     email = email_match.group(0)
+
+    #                 phone_number = self.extract_phone_number(content)
+                    
+    #                 # Insert the post into the PostgreSQL database
+    #                 try:
+    #                     self.cursor.execute(
+    #                         "INSERT INTO posts (author, content, email, phone_number) VALUES (%s, %s, %s, %s)",
+    #                         (author, content, email, phone_number)
+    #                     )
+    #                     self.conn.commit()
+    #                     logging.info(f"Successfully scraped and stored new post by {author}")
+    #                     posts.append({
+    #                         "author": author,
+    #                         "content": content,
+    #                         "email": email,
+    #                         "phone_number": phone_number
+    #                     })
+    #                 except psycopg2.IntegrityError:
+    #                     self.conn.rollback()
+    #                     logging.warning(f"Duplicate post detected for {author}. Skipping.")
+    #                 except (Exception, psycopg2.Error) as error:
+    #                     logging.error(f"Error inserting post into database: {error}")
+    #                     self.conn.rollback()
+                    
+    #             except Exception as e:
+    #                 logging.error(f"Error scraping post: {str(e)}")
+    #                 continue
+
+    #         # Scroll down to load more posts
+    #         last_height = self.driver.execute_script("return document.body.scrollHeight")
+    #         self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    #         time.sleep(2)
+    #         new_height = self.driver.execute_script("return document.body.scrollHeight")
+    #         if new_height == last_height:
+    #             scroll_attempts += 1
+    #         else:
+    #             scroll_attempts = 0
+
+    #     return posts
+
     def scrape_posts(self, num_posts=10):
         posts = []
         scroll_attempts = 0
@@ -288,6 +394,15 @@ class LinkedInPostScraper:
             else:
                 scroll_attempts = 0
 
+            # Check if there is a next page button and click it
+            try:
+                next_button = self.driver.find_element(By.XPATH, "//button[contains(@aria-label, 'Next')]")
+                next_button.click()
+                time.sleep(5)
+            except NoSuchElementException:
+                logging.info("No more pages to scrape.")
+                break
+
         return posts
 
     def run(self):
@@ -297,6 +412,7 @@ class LinkedInPostScraper:
             self.login()
             self.search_posts()
             posts = self.scrape_posts()
+            print(json.dumps(posts)) #add n
             return posts
         except Exception as e:
             logging.error(f"An error occurred during scraping: {str(e)}")
