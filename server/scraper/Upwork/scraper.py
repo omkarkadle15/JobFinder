@@ -55,7 +55,7 @@ def extract_features(soup):
         for li in features_ul.find_all('li'):
             feature_title = li.find('strong').get_text(strip=True) if li.find('strong') else 'Feature title not found'
             feature_description = li.find('div', class_='description').get_text(strip=True) if li.find('div',
-                                                                                                       class_='description') else 'Feature description not found'
+                                                                                                class_='description') else 'Feature description not found'
             features_list.append({
                 'Title': feature_title,
                 'Description': feature_description
