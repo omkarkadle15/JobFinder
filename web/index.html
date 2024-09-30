@@ -7,10 +7,12 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Job Finder</h1>
-    <form action="/run_script" method="post">
-        <button type="submit" name="script" value="linkedin">Run LinkedIn Scraper</button>
-        <button type="submit" name="script" value="upwork">Run Upwork Scraper</button>
-    </form>
+    <div class="container">
+        <h1>Job Finder</h1>
+        <form action="/run_script" method="post">
+            <button type="submit" name="script" value="linkedin">Run LinkedIn Scraper</button>
+            <button type="submit" name="script" value="upwork">Run Upwork Scraper</button>
+        </form>
+    </div>
 </body>
 </html>

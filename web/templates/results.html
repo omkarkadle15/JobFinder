@@ -7,26 +7,26 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Scraped Posts</h1>
-    <div class="posts">
-        {% for post in posts %}
-        <div class="post">
-            <h2>Post ID: {{ post[0] }}</h2>
-            <p><strong>Author:</strong> {{ post[1] }}</p>
-            <p><strong>Content:</strong> {{ post[2] }}</p>
+    <div class="container">
+        <h1>Scraped Posts</h1>
+        <div class="posts">
+            {% for post in posts %}
+            <div class="post">
+                <h2>Post ID: {{ post[0] }}</h2>
+                <p><strong>Author:</strong> {{ post[1] }}</p>
+                <p><strong>Content:</strong> {{ post[2] }}</p>
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-    <h2>Query a Post</h2>
-    <form id="query-form">
-        <label for="post_id">Post ID:</label>
-        <input type="text" id="post_id" name="post_id" required>
-        <label for="query">Your Query:</label>
-        <input type="text" id="query" name="query" required>
-        <button type="submit">Submit Query</button>
-    </form>
+        <h2>Query a Post</h2>
+        <form id="query-form">
+            <input type="text" id="post_id" name="post_id" placeholder="Enter Post ID" required>
+            <input type="text" id="query" name="query" placeholder="Enter your query" required>
+            <button type="submit">Submit Query</button>
+        </form>
 
-    <div id="query-response"></div>
+        <div id="query-response"></div>
+    </div>
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>
 </body>
 </html>

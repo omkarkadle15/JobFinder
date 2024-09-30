@@ -3,6 +3,7 @@ import subprocess
 import psycopg2
 import requests
 import json
+import os
 
 app = Flask(__name__)
 
@@ -14,13 +15,23 @@ def get_db_connection():
 def index():
     return render_template('index.html')
 
+import os
+
 @app.route('/run_script', methods=['POST'])
 def run_script():
     script = request.form['script']
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if script == 'linkedin':
-        subprocess.run(['python', 'JobFinder/server/scraper/LinkedIn/main.py'])
+        script_path = os.path.join(base_dir, 'server', 'scraper', 'LinkedIn', 'main.py')
     elif script == 'upwork':
-        subprocess.run(['python', 'JobFinder/server/scraper/Upwork/scraper.py'])
+        script_path = os.path.join(base_dir, 'server', 'scraper', 'Upwork', 'scraper.py')
+    else:
+        return "Invalid script specified", 400
+
+    if not os.path.exists(script_path):
+        return f"Script not found: {script_path}", 404
+
+    subprocess.run(['python', script_path])
     return redirect(url_for('results'))
 
 @app.route('/results')

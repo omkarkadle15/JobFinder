@@ -60,10 +60,10 @@ class LinkedInPostScraper:
                 self.conn.close()
             raise
 
-    def click_more_button(self):
+    def click_more_button(self,max_clicks=10):
         try:
             while True:
-                more_buttons = WebDriverWait(self.driver, 10).until(
+                more_buttons = WebDriverWait(self.driver, 1).until(
                     EC.presence_of_all_elements_located((By.XPATH, "//span[text()='…more']"))
                 )
                 if not more_buttons:
@@ -310,7 +310,7 @@ class LinkedInPostScraper:
         ]
 
         while len(posts) < num_posts and scroll_attempts < max_scroll_attempts:
-            self.click_more_button()
+            self.click_more_button(max_clicks=10)
 
             post_elements = self.driver.find_elements(By.XPATH, "//div[contains(@class, 'feed-shared-update-v2') or contains(@class, 'occludable-update')]")
             
