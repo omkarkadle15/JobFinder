@@ -1,6 +1,6 @@
 import json
 
-from server.scraper.Upwork.db.model.work import Work
+from server.db.model.job_post_upwork_model import JobPostUpwork
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
@@ -12,18 +12,17 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 
-def __create_work_instance(data: dict) -> Work:
+def __create_work_instance(data: dict) -> JobPostUpwork:
     """
     Create and return an instance of the Work class.
     """
-    return Work(
+    return JobPostUpwork(
         job_title=data["job_title"],
         posted_on=data["posted_on"],
         description=json.dumps(data["description"]),
         job_data=json.dumps(data["job_data"]),
         link=data["link"]
     )
-
 
 
 def insert_data(data: dict) -> None:
@@ -38,7 +37,7 @@ def insert_data(data: dict) -> None:
 
 def get_all() -> list[dict]:
     try:
-        all_work = session.query(Work).all()
+        all_work = session.query(JobPostUpwork).all()
         work_list = [
             {
                 "id": work.id,
@@ -60,7 +59,7 @@ def get_all() -> list[dict]:
 
 if __name__ == '__main__':
     data = {
-        "job_title": "work.job_title",
+        "job_title": "NEW.work.job_title",
         "posted_on": "work.posted_on",
         "description": "work.descriptionkuhdffiuehfe",
         "job_data": "work.job_data",
