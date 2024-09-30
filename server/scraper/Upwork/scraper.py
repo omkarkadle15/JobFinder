@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-from server.scraper.Upwork.db.transaction import insert_data, get_all
+from server.db.transactions.upwork_transactions import insert_data, get_all
 from server.scraper.Upwork.util.link import extract_links
 
 

@@ -1,4 +1,4 @@
-CREATE TABLE work (
+CREATE TABLE job_post_upwork (
     id BIGSERIAL PRIMARY KEY,
     job_title VARCHAR,
     posted_on VARCHAR,
