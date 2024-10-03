@@ -12,7 +12,7 @@ def __get_urls_from_file(file_path: str) -> list:
     return url_list
 
 
-def fetch_page_content(url):
+def fetch_page_content(url: str) -> str:
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     driver = webdriver.Chrome()
@@ -63,8 +63,8 @@ def extract_features(soup):
     return features_list
 
 
-def extract_job_info(page_content, url: str):
-    soup = BeautifulSoup(page_content, 'lxml')
+def extract_job_info(page_content, url: str) -> dict:
+    soup = BeautifulSoup(page_content, 'html.parser')
 
     job_title = extract_job_title(soup)
     posted_on = extract_posted_on(soup)
@@ -86,7 +86,7 @@ def get_all_jobs() -> list[dict]:
     return get_all()
 
 
-if __name__ == '__main__':
+def main() -> None:
     from util.scheduler import job_data_extract
     QUERY: str = "seo"
     BASE_URL = f"https://www.upwork.com/nx/search/jobs/?q={QUERY}"
@@ -97,9 +97,13 @@ if __name__ == '__main__':
         try:
             print("getting new page")
             page_count += 1
-            page_url = f"{BASE_URL}&page={page_count}"
+            page_url: str = f"{BASE_URL}&page={page_count}"
             job_data_extract(page_url)
 
         except Exception as e:
             print(f"No more pages or error: {e}")
             break
+
+
+if __name__ == '__main__':
+    main()
