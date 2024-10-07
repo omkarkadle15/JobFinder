@@ -39,21 +39,19 @@ def run_script():
     script = request.form['script']
     if script == 'linkedin':
         try:
+            position = request.form['position']
+            experience = request.form['experience']
+            location = request.form['location']
+            search_query = f"{position} {experience} years experience {location}"
+
             from server.scraper.LinkedIn.main import main as linkedin_main
-            posts = linkedin_main()
+            posts = linkedin_main(search_query)
             return redirect(url_for('results', new_data=True, source='linkedin'))
         except ImportError as e:
             print(f"Error importing LinkedIn scraper: {e}")
             return "Error: LinkedIn scraper module not found", 500
     elif script == 'upwork':
-        try:
-            from server.scraper.Upwork.scraper import get_all_jobs
-            jobs = get_all_jobs()
-            return redirect(url_for('results', new_data=True, source='upwork'))
-        except ImportError as e:
-            print(f"Error importing Upwork scraper: {e}")
-            return "Error: Upwork scraper module not found", 500
-    return redirect(url_for('results'))
+        return redirect(url_for('results'))
 
 
 @app.route('/results')
@@ -62,9 +60,9 @@ def results():
     conn = get_db_connection()
     cursor = conn.cursor()
     if new_data:
-        cursor.execute("SELECT id, author, content FROM posts ORDER BY id DESC LIMIT 10")
+        cursor.execute("SELECT id, author, content, email, phone_number FROM posts ORDER BY id DESC LIMIT 10")
     else:
-        cursor.execute("SELECT id, author, content FROM posts")
+        cursor.execute("SELECT id, author, content, email, phone_number FROM posts")
     posts = cursor.fetchall()
     conn.close()
     return render_template('results.html', posts=posts, new_data=new_data)
@@ -107,6 +105,36 @@ def query_post():
     else:
         return jsonify({'error': 'Post not found'}), 404
 
+@app.route('/get_full_content/<int:post_id>')
+def get_full_content(post_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT content FROM posts WHERE id = %s", (post_id,))
+    content = cursor.fetchone()[0]
+    conn.close()
+    return jsonify({'content': content})
+
+@app.route('/send_email', methods=['POST'])
+def send_email():
+    post_id = request.form['post-id']
+    to = request.form['to']
+    subject = request.form['subject']
+    message = request.form['message']
+    attachment = request.files['attachment'] if 'attachment' in request.files else None
+
+    # Here you would implement your email sending logic
+    # For example, using the Flask-Mail extension or the `smtplib` library
+
+    # For demonstration purposes, we'll just print the email details
+    print(f"Sending email for Post ID: {post_id}")
+    print(f"To: {to}")
+    print(f"Subject: {subject}")
+    print(f"Message: {message}")
+    if attachment:
+        print(f"Attachment: {attachment.filename}")
+
+
+    return jsonify({'message': 'Email sent successfully'})
 
 if __name__ == '__main__':
     app.run(debug=True)

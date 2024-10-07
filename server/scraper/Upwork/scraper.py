@@ -4,7 +4,8 @@ from selenium.webdriver.chrome.options import Options
 
 from server.db.transactions.upwork_transactions import insert_data, get_all
 from server.scraper.Upwork.util.link import extract_links
-
+from server.scraper.Upwork.util.link import extract_links
+from server.scraper.Upwork.util.scheduler import job_data_extract
 
 def __get_urls_from_file(file_path: str) -> list:
     with open(file_path, 'r') as file:

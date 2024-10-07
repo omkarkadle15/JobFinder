@@ -371,10 +371,11 @@ def query_llama(prompt, post_content):
         return f"Error: Unable to get a response from the Llama model. Status code: {response.status_code}"
 
 
-def main():
+def main(search_query=None):
     username = os.getenv("LINKEDIN_USERNAME")
     password = os.getenv("LINKEDIN_PASSWORD")
-    search_query = "python developer"
+    if not search_query:
+        search_query = "python developer"
 
     db_params = {
         "database": os.getenv("DB_NAME"),
@@ -389,7 +390,6 @@ def main():
 
     print(f"Scraped {len(posts)} posts and stored them in the PostgreSQL database.")
     return posts
-
 
 if __name__ == "__main__":
     main()
