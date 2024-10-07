@@ -59,39 +59,63 @@ button:hover {
     background-color: #2980b9;
 }
 
-.posts {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
+.posts-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
 }
 
-.post {
-    background-color: #fff;
-    border-radius: 5px;
-    padding: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+.posts-table th,
+.posts-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
 }
 
-.post h3 {
-    margin-top: 0;
-    color: #2c3e50;
+.posts-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
 }
 
-.post-content {
-    max-height: 3em;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
+.posts-table tr:nth-child(even) {
+    background-color: #f9f9f9;
 }
 
-.post-content.expanded {
-    max-height: none;
+.posts-table .post-content {
+    max-width: 300px;
+}
+
+.post-content p {
+    margin: 0;
 }
 
 .see-more {
     color: #3498db;
     cursor: pointer;
     display: inline-block;
+    margin-left: 5px;
+}
+
+.full-content {
+    display: none;
+}
+
+.full-content .see-more {
+    display: block;
     margin-top: 10px;
+}
+
+.posts-table .send-email-btn {
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.posts-table .send-email-btn:hover {
+    background-color: #2980b9;
 }
 
 .modal {

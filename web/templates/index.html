@@ -15,6 +15,7 @@
                 <div class="form-group">
                     <label for="position">Position:</label>
                     <select name="position" id="position">
+                        <option value="">Select a position</option>
                         <option value="python developer">Python Developer</option>
                         <option value="java developer">Java Developer</option>
                     </select>
@@ -22,6 +23,7 @@
                 <div class="form-group">
                     <label for="experience">Experience:</label>
                     <select name="experience" id="experience">
+                        <option value="">Select experience</option>
                         <option value="1">1 year</option>
                         <option value="2">2 years</option>
                     </select>
@@ -29,6 +31,7 @@
                 <div class="form-group">
                     <label for="location">Location:</label>
                     <select name="location" id="location">
+                        <option value="">Select a location</option>
                         <option value="pune">Pune</option>
                         <option value="delhi">Delhi</option>
                         <option value="bangalore">Bangalore</option>
@@ -45,5 +48,6 @@
             </form>
         </div>
     </div>
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
 </body>
 </html>

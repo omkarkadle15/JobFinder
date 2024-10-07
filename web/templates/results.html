@@ -9,21 +9,38 @@
 <body>
     <div class="container">
         <h1>Scraped Posts</h1>
-        <div class="posts">
-            {% for post in posts %}
-            <div class="post">
-                <h3>Post ID: {{ post[0] }}</h3>
-                <p><strong>Author:</strong> {{ post[1] }}</p>
-                <p><strong>Email:</strong> {{ post[3] }}</p>
-                <p><strong>Phone:</strong> {{ post[4] }}</p>
-                <div class="post-content">
-                    <p><strong>Content:</strong> {{ post[2][:100] }}...</p>
-                </div>
-                <span class="see-more" data-post-id="{{ post[0] }}">See More</span>
-                <button class="send-email-btn" data-post-id="{{ post[0] }}" data-email="{{ post[3] }}">Send Email</button>
-            </div>
-            {% endfor %}
-        </div>
+        <table class="posts-table">
+            <thead>
+                <tr>
+                    <th>Post ID</th>
+                    <th>Author Name</th>
+                    <th>Content</th>
+                    <th>Email</th>
+                    <th>Phone No</th>
+                    <th>Send Email Button</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ post[1] }}</td>
+                    <td class="post-content">
+                        <p>{{ post[2][:100] }}{% if post[2]|length > 100 %}... <span class="see-more" data-post-id="{{ post[0] }}">See More</span>{% endif %}</p>
+                        <div class="full-content" style="display: none;">
+                            {{ post[2] }}
+                            <span class="see-more" data-post-id="{{ post[0] }}">See Less</span>
+                        </div>
+                    </td>
+                    <td>{{ post[3] }}</td>
+                    <td>{{ post[4] }}</td>
+                    <td>
+                        <button class="send-email-btn" data-post-id="{{ post[0] }}" data-email="{{ post[3] }}">Send Email</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
     <div id="email-modal" class="modal">
         <div class="modal-content">
