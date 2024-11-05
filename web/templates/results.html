@@ -7,26 +7,67 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Scraped Posts</h1>
-    <div class="posts">
-        {% for post in posts %}
-        <div class="post">
-            <h2>Post ID: {{ post[0] }}</h2>
-            <p><strong>Author:</strong> {{ post[1] }}</p>
-            <p><strong>Content:</strong> {{ post[2] }}</p>
-        </div>
-        {% endfor %}
+    <div class="container">
+        <h1>Scraped Posts</h1>
+        <table class="posts-table">
+            <thead>
+                <tr>
+                    <th>Post ID</th>
+                    <th>Author Name</th>
+                    <th>Content</th>
+                    <th>Email</th>
+                    <th>Phone No</th>
+                    <th>Send Email Button</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ post[1] }}</td>
+                    <td class="post-content">
+                        <p>{{ post[2][:100] }}{% if post[2]|length > 100 %}... <span class="see-more" data-post-id="{{ post[0] }}">See More</span>{% endif %}</p>
+                        <div class="full-content" style="display: none;">
+                            {{ post[2] }}
+                            <span class="see-more" data-post-id="{{ post[0] }}">See Less</span>
+                        </div>
+                    </td>
+                    <td>{{ post[3] }}</td>
+                    <td>{{ post[4] }}</td>
+                    <td>
+                        <button class="send-email-btn" data-post-id="{{ post[0] }}" data-email="{{ post[3] }}">Send Email</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    <h2>Query a Post</h2>
-    <form id="query-form">
-        <label for="post_id">Post ID:</label>
-        <input type="text" id="post_id" name="post_id" required>
-        <label for="query">Your Query:</label>
-        <input type="text" id="query" name="query" required>
-        <button type="submit">Submit Query</button>
-    </form>
-
-    <div id="query-response"></div>
+    <div id="email-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Send Email</h2>
+            <form id="email-form">
+                <input type="hidden" id="post-id" name="post-id">
+                <div class="form-group">
+                    <label for="to">To:</label>
+                    <input type="email" id="to" name="to" required readonly>
+                </div>
+                <div class="form-group">
+                    <label for="subject">Subject:</label>
+                    <input type="text" id="subject" name="subject" required>
+                </div>
+                <div class="form-group">
+                    <label for="message">Message:</label>
+                    <textarea id="message" name="message" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="attachment">Attachment (Resume):</label>
+                    <input type="file" id="attachment" name="attachment">
+                </div>
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>
 </body>
 </html>

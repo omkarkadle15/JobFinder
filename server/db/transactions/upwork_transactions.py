@@ -1,16 +1,35 @@
 import json
-
-from server.db.model.job_post_upwork_model import JobPostUpwork
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 from os import getenv
+from server.db.model.job_post_upwork_model import JobPostUpwork
+from server.scraper.Upwork.util.link import extract_links
+from server.scraper.Upwork.util.scheduler import job_data_extract
 
 load_dotenv()
-engine = create_engine(getenv("POSTGRESQL_URL"))
+
+POSTGRESQL_URL = getenv("POSTGRESQL_URL")
+if not POSTGRESQL_URL:
+    raise ValueError("POSTGRESQL_URL environment variable is not set")
+
+# Ensure the dialect is 'postgresql'
+if POSTGRESQL_URL.startswith('postgres:'):
+    POSTGRESQL_URL = 'postgresql' + POSTGRESQL_URL[8:]
+
+try:
+    engine = create_engine(POSTGRESQL_URL)
+except ImportError:
+    # If psycopg2 is not installed, try using psycopg2-binary
+    try:
+        from psycopg2cffi import compat
+        compat.register()
+        engine = create_engine(POSTGRESQL_URL)
+    except ImportError:
+        raise ImportError("Neither psycopg2 nor psycopg2-binary is installed. Please install one of them.")
+
 Session = sessionmaker(bind=engine)
 session = Session()
-
 
 def __create_work_instance(data: dict) -> JobPostUpwork:
     """

@@ -7,10 +7,46 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Job Finder</h1>
-    <form action="/run_script" method="post">
-        <button type="submit" name="script" value="linkedin">Run LinkedIn Scraper</button>
-        <button type="submit" name="script" value="upwork">Run Upwork Scraper</button>
-    </form>
+    <div class="container">
+        <h1>Job Finder</h1>
+        <div class="scraper-section">
+            <h2>LinkedIn Scraper</h2>
+            <form action="/run_script" method="post" id="linkedin-form">
+                <div class="form-group">
+                    <label for="position">Position:</label>
+                    <select name="position" id="position">
+                        <option value="">Select a position</option>
+                        <option value="python developer">Python Developer</option>
+                        <option value="java developer">Java Developer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="experience">Experience:</label>
+                    <select name="experience" id="experience">
+                        <option value="">Select experience</option>
+                        <option value="1">1 year</option>
+                        <option value="2">2 years</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="location">Location:</label>
+                    <select name="location" id="location">
+                        <option value="">Select a location</option>
+                        <option value="pune">Pune</option>
+                        <option value="delhi">Delhi</option>
+                        <option value="bangalore">Bangalore</option>
+                        <option value="hyderabad">Hyderabad</option>
+                    </select>
+                </div>
+                <button type="submit" name="script" value="linkedin">Run LinkedIn Scraper</button>
+            </form>
+        </div>
+        <div class="scraper-section">
+            <h2>Upwork Scraper</h2>
+            <form action="/run_script" method="post">
+                <button type="submit" name="script" value="upwork">Run Upwork Scraper</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

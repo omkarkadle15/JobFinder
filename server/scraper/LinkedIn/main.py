@@ -4,23 +4,35 @@ import time
 import psycopg2
 import requests
 import json
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException, StaleElementReferenceException
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+from selenium import webdriver
+from selenium.webdriver.edge.service import Service as EdgeService
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
+
+
 class LinkedInPostScraper:
     def __init__(self, username, password, search_query, db_params):
-        options = webdriver.ChromeOptions()
+        options = webdriver.EdgeOptions()
         options.add_argument("--start-maximized")
         options.add_argument("--disable-notifications")
-        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        try:
+            # Use EdgeChromiumDriverManager to automatically download and manage the Edge driver
+            service = EdgeService(EdgeChromiumDriverManager().install())
+            self.driver = webdriver.Edge(service=service, options=options)
+        except Exception as e:
+            print(f"Error initializing Edge WebDriver: {e}")
+            raise
         self.username = username
         self.password = password
         self.search_query = search_query
@@ -69,7 +81,7 @@ class LinkedInPostScraper:
                 if not more_buttons:
                     logging.info("No '...more' buttons found. Moving on.")
                     break
-                
+
                 for button in more_buttons:
                     try:
                         WebDriverWait(self.driver, 10).until(
@@ -81,10 +93,10 @@ class LinkedInPostScraper:
                     except (StaleElementReferenceException, TimeoutException) as e:
                         logging.warning(f"Could not click '...more' button: {e}")
                         continue
-                
+
                 # Wait for any animations or page updates to complete
                 time.sleep(2)
-            
+
         except TimeoutException:
             logging.info("No more '...more' buttons found or timeout occurred. Moving on.")
         except Exception as e:
@@ -150,7 +162,7 @@ class LinkedInPostScraper:
                 content_tab.click()
             else:
                 logging.info("Content tab not found. Proceeding with default view.")
-            
+
             time.sleep(5)
 
             logging.info(f"Current URL: {self.driver.current_url}")
@@ -169,7 +181,7 @@ class LinkedInPostScraper:
                 EC.presence_of_element_located((By.ID, "username"))
             )
             password_field = self.driver.find_element(By.ID, "password")
-            
+
             username_field.send_keys(self.username)
             password_field.send_keys(self.password)
             password_field.send_keys(Keys.RETURN)
@@ -183,112 +195,6 @@ class LinkedInPostScraper:
             logging.error(f"Login failed: {str(e)}")
             self.driver.quit()
             raise
-
-    # def scrape_posts(self, num_posts=10):
-    #     posts = []
-    #     scroll_attempts = 0
-    #     max_scroll_attempts = 5
-
-    #     author_elements = [
-    #         ".//span[contains(@class, 'feed-shared-actor__name')]",
-    #         ".//span[contains(@class, 'update-components-actor__name')]",
-    #         ".//span[contains(@class, 'visually-hidden')]",
-    #         ".//span[contains(@class, 'update-components-actor__title')]"
-    #     ]
-
-    #     content_elements = [
-    #         ".//div[contains(@class, 'feed-shared-update-v2__description')]",
-    #         ".//div[contains(@class, 'feed-shared-text')]",
-    #         ".//div[contains(@class, 'update-components-text')]",
-    #         ".//div[contains(@class, 'feed-shared-update-v2__content')]"
-    #     ]
-
-    #     while len(posts) < num_posts and scroll_attempts < max_scroll_attempts:
-    #         self.click_more_button()
-
-    #         post_elements = self.driver.find_elements(By.XPATH, "//div[contains(@class, 'feed-shared-update-v2') or contains(@class, 'occludable-update')]")
-            
-    #         for post in post_elements:
-    #             if len(posts) >= num_posts:
-    #                 break
-                
-    #             try:
-    #                 author = None
-    #                 for element in author_elements:
-    #                     try:
-    #                         author = post.find_element(By.XPATH, element).text
-    #                         if author:
-    #                             author = self.clean_author_name(author)
-    #                             break
-    #                     except NoSuchElementException:
-    #                         continue
-
-    #                 if not author:
-    #                     logging.warning("Could not find author name, skipping post")
-    #                     continue
-
-    #                 content = None
-    #                 for element in content_elements:
-    #                     try:
-    #                         content = post.find_element(By.XPATH, element).text
-    #                         if content:
-    #                             content = self.clean_content(content)
-    #                             break
-    #                     except NoSuchElementException:
-    #                         continue
-
-    #                 if not content:
-    #                     logging.warning("Could not find post content, skipping post")
-    #                     continue
-
-    #                 # Check if post already exists in the database
-    #                 if self.post_exists(author, content):
-    #                     logging.info(f"Post by {author} already exists. Skipping.")
-    #                     continue
-
-    #                 email = None
-    #                 email_match = re.search(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', content)
-    #                 if email_match:
-    #                     email = email_match.group(0)
-
-    #                 phone_number = self.extract_phone_number(content)
-                    
-    #                 # Insert the post into the PostgreSQL database
-    #                 try:
-    #                     self.cursor.execute(
-    #                         "INSERT INTO posts (author, content, email, phone_number) VALUES (%s, %s, %s, %s)",
-    #                         (author, content, email, phone_number)
-    #                     )
-    #                     self.conn.commit()
-    #                     logging.info(f"Successfully scraped and stored new post by {author}")
-    #                     posts.append({
-    #                         "author": author,
-    #                         "content": content,
-    #                         "email": email,
-    #                         "phone_number": phone_number
-    #                     })
-    #                 except psycopg2.IntegrityError:
-    #                     self.conn.rollback()
-    #                     logging.warning(f"Duplicate post detected for {author}. Skipping.")
-    #                 except (Exception, psycopg2.Error) as error:
-    #                     logging.error(f"Error inserting post into database: {error}")
-    #                     self.conn.rollback()
-                    
-    #             except Exception as e:
-    #                 logging.error(f"Error scraping post: {str(e)}")
-    #                 continue
-
-    #         # Scroll down to load more posts
-    #         last_height = self.driver.execute_script("return document.body.scrollHeight")
-    #         self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    #         time.sleep(2)
-    #         new_height = self.driver.execute_script("return document.body.scrollHeight")
-    #         if new_height == last_height:
-    #             scroll_attempts += 1
-    #         else:
-    #             scroll_attempts = 0
-
-    #     return posts
 
     def scrape_posts(self, num_posts=10):
         posts = []
@@ -312,12 +218,13 @@ class LinkedInPostScraper:
         while len(posts) < num_posts and scroll_attempts < max_scroll_attempts:
             self.click_more_button()
 
-            post_elements = self.driver.find_elements(By.XPATH, "//div[contains(@class, 'feed-shared-update-v2') or contains(@class, 'occludable-update')]")
-            
+            post_elements = self.driver.find_elements(By.XPATH,
+                                                      "//div[contains(@class, 'feed-shared-update-v2') or contains(@class, 'occludable-update')]")
+
             for post in post_elements:
                 if len(posts) >= num_posts:
                     break
-                
+
                 try:
                     author = None
                     for element in author_elements:
@@ -358,7 +265,7 @@ class LinkedInPostScraper:
                         email = email_match.group(0)
 
                     phone_number = self.extract_phone_number(content)
-                    
+
                     # Insert the post into the PostgreSQL database
                     try:
                         self.cursor.execute(
@@ -379,7 +286,7 @@ class LinkedInPostScraper:
                     except (Exception, psycopg2.Error) as error:
                         logging.error(f"Error inserting post into database: {error}")
                         self.conn.rollback()
-                    
+
                 except Exception as e:
                     logging.error(f"Error scraping post: {str(e)}")
                     continue
@@ -412,7 +319,7 @@ class LinkedInPostScraper:
             self.login()
             self.search_posts()
             posts = self.scrape_posts()
-            print(json.dumps(posts)) #add n
+            print(json.dumps(posts))  # add n
             return posts
         except Exception as e:
             logging.error(f"An error occurred during scraping: {str(e)}")
@@ -445,60 +352,44 @@ class LinkedInPostScraper:
             logging.error(f"Error retrieving post from database: {error}")
             return None
 
+
 def query_llama(prompt, post_content):
-    url = "http://localhost:11434/api/generate"
-    
+    url = "http://<docker_container_ip>:11434/api/generate"
+
     data = {
         "model": "llama3.1",
         "prompt": f"Based on the following LinkedIn post, {prompt}\n\nPost content: {post_content}",
         "stream": False
     }
-    
+
     response = requests.post(url, json=data)
-    
+
     if response.status_code == 200:
         result = json.loads(response.text)
         return result['response']
     else:
         return f"Error: Unable to get a response from the Llama model. Status code: {response.status_code}"
 
-def main():
-    username = "omkarkadle@gmail.com"
-    password = "Omkar@Kadle2003"
-    search_query = "python developer"
-    
+
+def main(search_query=None):
+    username = os.getenv("LINKEDIN_USERNAME")
+    password = os.getenv("LINKEDIN_PASSWORD")
+    if not search_query:
+        search_query = "python developer"
+
     db_params = {
-        "database": "linkedin",
-        "user": "postgres",
-        "password": "postgres",
-        "host": "localhost",
-        "port": "5432"
+        "database": os.getenv("DB_NAME"),
+        "user": os.getenv("DB_USER"),
+        "password": os.getenv("DB_PASSWORD"),
+        "host": os.getenv("DB_HOST"),
+        "port": os.getenv("DB_PORT")
     }
 
     scraper = LinkedInPostScraper(username, password, search_query, db_params)
     posts = scraper.run()
 
     print(f"Scraped {len(posts)} posts and stored them in the PostgreSQL database.")
-    print("Press Enter to continue to querying...")
-    input()  # Wait for user to press Enter
-
-    # Query specific posts using Llama
-    while True:
-        post_id = input("Enter the ID of the post you want to query (or 'q' to quit): ")
-        if post_id.lower() == 'q':
-            break
-
-        post = scraper.get_post_by_id(post_id)
-        if post:
-            print(f"Post content: {post['content']}")
-            user_query = input("Enter your query about this post: ")
-            
-            llama_response = query_llama(user_query, post['content'])
-            print(f"Llama's response: {llama_response}")
-        else:
-            print(f"No post found with ID {post_id}")
-
-    scraper.close_connection()
+    return posts
 
 if __name__ == "__main__":
     main()
