@@ -354,7 +354,7 @@ class LinkedInPostScraper:
 
 
 def query_llama(prompt, post_content):
-    url = "http://localhost:11434/api/generate"
+    url = "http://<docker_container_ip>:11434/api/generate"
 
     data = {
         "model": "llama3.1",
