@@ -31,7 +31,7 @@ class LinkedInPostScraper:
             service = EdgeService(EdgeChromiumDriverManager().install())
             self.driver = webdriver.Edge(service=service, options=options)
         except Exception as e:
-            print(f"Error initializing Edge WebDriver: {e}")
+            logging.error(f"Error initializing Edge WebDriver: {e}")
             raise
         self.username = username
         self.password = password
@@ -45,9 +45,9 @@ class LinkedInPostScraper:
             self.cursor.execute("TRUNCATE TABLE posts;")
             self.cursor.execute("ALTER SEQUENCE posts_id_seq RESTART WITH 1;")
             self.conn.commit()
-            print("Table 'posts' has been reset and ID sequence restarted.")
+            logging.info("Table 'posts' has been reset and ID sequence restarted.")
         except (Exception, psycopg2.Error) as error:
-            print(f"Error resetting table: {error}")
+            logging.error(f"Error resetting table: {error}")
             self.conn.rollback()
 
     def setup_database(self):
@@ -65,9 +65,9 @@ class LinkedInPostScraper:
                 )
             ''')
             self.conn.commit()
-            print("Database connection established and table created/verified.")
+            logging.info("Database connection established and table created/verified.")
         except (Exception, psycopg2.Error) as error:
-            print(f"Error while connecting to PostgreSQL: {error}")
+            logging.error(f"Error while connecting to PostgreSQL: {error}")
             if self.conn:
                 self.conn.close()
             raise
@@ -90,12 +90,11 @@ class LinkedInPostScraper:
                         self.driver.execute_script("arguments[0].scrollIntoView(true);", button)
                         self.driver.execute_script("arguments[0].click();", button)
                         logging.info("Clicked '...more' button")
+                        time.sleep(5)  # Adjusted delay
                     except (StaleElementReferenceException, TimeoutException) as e:
                         logging.warning(f"Could not click '...more' button: {e}")
                         continue
-
-                # Wait for any animations or page updates to complete
-                time.sleep(2)
+                time.sleep(5)  # Adjusted delay
 
         except TimeoutException:
             logging.info("No more '...more' buttons found or timeout occurred. Moving on.")
@@ -131,7 +130,7 @@ class LinkedInPostScraper:
             count = self.cursor.fetchone()[0]
             return count > 0
         except (Exception, psycopg2.Error) as error:
-            print(f"Error checking for existing post: {error}")
+            logging.error(f"Error checking for existing post: {error}")
             return False
 
     def search_posts(self):
@@ -294,7 +293,7 @@ class LinkedInPostScraper:
             # Scroll down to load more posts
             last_height = self.driver.execute_script("return document.body.scrollHeight")
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(2)
+            time.sleep(20)  # Increased delay to slow down the scrolling
             new_height = self.driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height:
                 scroll_attempts += 1
@@ -305,7 +304,7 @@ class LinkedInPostScraper:
             try:
                 next_button = self.driver.find_element(By.XPATH, "//button[contains(@aria-label, 'Next')]")
                 next_button.click()
-                time.sleep(5)
+                time.sleep(60)  # Increased delay to slow down the page transition
             except NoSuchElementException:
                 logging.info("No more pages to scrape.")
                 break
@@ -319,7 +318,7 @@ class LinkedInPostScraper:
             self.login()
             self.search_posts()
             posts = self.scrape_posts()
-            print(json.dumps(posts))  # add n
+            logging.info(f"Scraped {len(posts)} posts and stored them in the PostgreSQL database.")
             return posts
         except Exception as e:
             logging.error(f"An error occurred during scraping: {str(e)}")
@@ -388,7 +387,7 @@ def main(search_query=None):
     scraper = LinkedInPostScraper(username, password, search_query, db_params)
     posts = scraper.run()
 
-    print(f"Scraped {len(posts)} posts and stored them in the PostgreSQL database.")
+    logging.info(f"Scraped {len(posts)} posts and stored them in the PostgreSQL database.")
     return posts
 
 if __name__ == "__main__":
